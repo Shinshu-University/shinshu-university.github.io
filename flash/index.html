@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="none">
+  <title>フラッシュ暗算</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+    #flash {
+      font-size: 5em;
+      margin: 40px 0;
+    }
+    #settings, #controls, #answerDisplay {
+      margin-top: 30px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>フラッシュ暗算</h1>
+
+<!-- 設定画面 -->
+<div id="settings">
+  <label>数値の最小値: <input type="number" id="min" value="1"></label><br>
+  <label>数値の最大値: <input type="number" id="max" value="9"></label><br>
+  <label>問題数: <input type="number" id="count" value="5"></label><br>
+  <label>表示間隔（ミリ秒）: <input type="number" id="interval" value="800"></label><br>
+  <label>演算モード:<br>
+    <label><input type="radio" name="mode" value="+" checked> 加算（＋）</label>
+    <label><input type="radio" name="mode" value="-"> 減算（−）</label>
+    <label><input type="radio" name="mode" value="*"> 乗算（×）</label>
+    <label><input type="radio" name="mode" value="/"> 除算（÷）</label>
+  </label><br><br>
+  <button onclick="start()">スタート</button>
+</div>
+
+<!-- 表示部 -->
+<div id="flash" class="hidden">0</div>
+
+<!-- 答え表示と再設定 -->
+<div id="controls" class="hidden">
+  <button onclick="showAnswer()">答えを表示</button>
+<button onclick="resetToSettings()">設定に戻る</button>
+</div>
+
+<div id="answerDisplay" class="hidden">
+  <h2>答え: <span id="answerText"></span></h2>
+</div>
+
+<script>
+  let numbers = [];
+  let result = 0;
+  let currentIndex = 0;
+  let mode = '+';
+
+  function start() {
+    // 入力取得
+    const min = parseInt(document.getElementById('min').value);
+    const max = parseInt(document.getElementById('max').value);
+    const count = parseInt(document.getElementById('count').value);
+    const interval = parseInt(document.getElementById('interval').value);
+    mode = document.querySelector('input[name="mode"]:checked').value;
+
+    // ランダム数列作成
+    numbers = [];
+    for (let i = 0; i < count; i++) {
+      let n = Math.floor(Math.random() * (max - min + 1)) + min;
+      if (mode === '/' && n === 0) n = 1; // 0除算防止
+      numbers.push(n);
+    }
+
+    // 答え計算
+    result = numbers[0];
+    for (let i = 1; i < numbers.length; i++) {
+      const n = numbers[i];
+      if (mode === '+') result += n;
+      else if (mode === '-') result -= n;
+      else if (mode === '*') result *= n;
+      else if (mode === '/') result /= n;
+    }
+
+    // 表示開始
+    document.getElementById('settings').classList.add('hidden');
+    document.getElementById('flash').classList.remove('hidden');
+    currentIndex = 0;
+    showNext(interval);
+  }
+
+  function showNext(interval) {
+    if (currentIndex < numbers.length) {
+      document.getElementById('flash').textContent = numbers[currentIndex];
+      currentIndex++;
+      setTimeout(() => showNext(interval), interval);
+    } else {
+      document.getElementById('flash').textContent = '？';
+      document.getElementById('controls').classList.remove('hidden');
+    }
+  }
+
+  function showAnswer() {
+    document.getElementById('answerText').textContent = Math.round(result * 100) / 100;
+    document.getElementById('answerDisplay').classList.remove('hidden');
+  }
+  
+  function resetToSettings() {
+  document.getElementById('settings').classList.remove('hidden');
+  document.getElementById('flash').classList.add('hidden');
+  document.getElementById('controls').classList.add('hidden');
+  document.getElementById('answerDisplay').classList.add('hidden');
+}
+
+</script>
+
+</body>
+</html>
